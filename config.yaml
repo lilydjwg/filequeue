@@ -1,0 +1,15 @@
+file:
+  path: /var/log/nginx/access.log
+  lower_size: 100000000
+  upper_size: 200000000
+kafka_topic: test
+rdkafka:
+  # set to the correct version or we'll get warnings
+  broker.version.fallback: 0.8.2
+  metadata.broker.list: >
+    host1:9092,host2:9092,host3:9092
+  batch.num.messages: 50000
+  compression.codec: snappy
+  message.send.max.retries: 3
+  queue.buffering.max.messages: 500000
+  socket.keepalive.enable: true

@@ -1,0 +1,8 @@
+Package: @pkgname@
+Version: @version@
+Maintainer: lilydjwg <lilydjwg@gmail.com>
+Section: misc
+Architecture: amd64
+Depends: librdkafka1 (>= 0.9.5)
+Description: use log files as a queue to send data to Kafka without rotation
+Suggests: supervisor, systemd

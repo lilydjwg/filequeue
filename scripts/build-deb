@@ -1,0 +1,31 @@
+#!/bin/bash -e
+
+pkgrel=1
+
+pkgname=$(cargo pkgid | grep -Po '[^/]+(?=[:#])' | tail -n1)
+version=$(cargo pkgid | grep -Po '(?<=[:#])[^:#]+$')
+
+cargo +nightly build --release
+
+d=$(mktemp -d)
+trap 'rm -rf "$d"' EXIT INT QUIT TERM
+
+mkdir -p "$d/usr/bin"
+cp "target/release/$pkgname" "$d/usr/bin"
+cp -r DEBIAN "$d"
+
+install -Dm644 config.yaml "$d/usr/share/filequeue/example.yaml"
+install -Dm644 scripts/supervisor.conf "$d/usr/share/filequeue/supervisor.conf.example"
+
+pushd "$d" >/dev/null
+find . -path ./DEBIAN -prune -o -type f -print0 | xargs -0 md5sum > DEBIAN/md5sums
+sed -i \
+  -e "s|@version@|$version-$pkgrel|g" \
+  -e "s|@pkgname@|$pkgname|g" \
+  DEBIAN/control
+popd >/dev/null
+
+fakeroot <<SH
+chown root:root "$d"/usr
+dpkg-deb -b "$d" ${pkgname}_"$version"-${pkgrel}_amd64.deb
+SH

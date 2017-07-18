@@ -1,0 +1,21 @@
+[package]
+name = "filequeue"
+version = "0.1.5"
+authors = ["lilydjwg <lilydjwg@gmail.com>"]
+
+[dependencies]
+libc = "*"
+inotify = "*"
+rdkafka = "*"
+clap = "*"
+error-chain = "*"
+byteorder = "*"
+log = "*"
+slog-envlogger = "*"
+serde = "*"
+serde_derive = "*"
+serde_yaml = "*"
+signalbool = "*"
+
+[profile.release]
+lto = true
