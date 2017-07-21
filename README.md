@@ -13,7 +13,7 @@ Requirements
 ====
 
 * The log file should be line-based: every line is a message to be sent to Kafka
-* The log file should be in valid UTF-8 encoding
+* The log file should be in valid UTF-8 encoding; invalid characters are replaced by "�"
 * Linux >= 3.15 is required because it uses the `FALLOC_FL_COLLAPSE_RANGE` mode of fallocate(2)
 * The log file should be on XFS (or ext4 with a recent kernel; 3.16 may not work correctly).
 

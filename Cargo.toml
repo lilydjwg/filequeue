@@ -1,6 +1,6 @@
 [package]
 name = "filequeue"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["lilydjwg <lilydjwg@gmail.com>"]
 
 [dependencies]

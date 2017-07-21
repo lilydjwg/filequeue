@@ -5,7 +5,7 @@ pkgrel=1
 pkgname=$(cargo pkgid | grep -Po '[^/]+(?=[:#])' | tail -n1)
 version=$(cargo pkgid | grep -Po '(?<=[:#])[^:#]+$')
 
-cargo +nightly build --release
+cargo build --release
 
 d=$(mktemp -d)
 trap 'rm -rf "$d"' EXIT INT QUIT TERM

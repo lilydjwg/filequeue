@@ -137,9 +137,9 @@ impl FileQueue {
         break;
       }
       read_something = true;
-      let line = String::from_utf8(buf)?;
+      let line = String::from_utf8_lossy(&buf).into_owned();
       debug_assert_eq!(line.find('\n').unwrap(), line.len()-1);
-      buf = vec![];
+      buf.clear();
       chan.send(Some(line))?;
     }
     if read_something {
