@@ -3,12 +3,12 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 use rdkafka::config::ClientConfig;
-use rdkafka::producer::{BaseProducer, EmptyProducerContext};
+use rdkafka::producer::{BaseProducer, BaseRecord, DefaultProducerContext};
 
-use errors::*;
+use crate::errors::*;
 
 pub struct KafkaSink {
-  client: BaseProducer<EmptyProducerContext>,
+  client: BaseProducer<DefaultProducerContext>,
   topic: String,
 }
 
@@ -31,13 +31,14 @@ impl KafkaSink {
     loop {
       match chan.recv_timeout(Duration::from_secs(1)) {
         Ok(Some(msg)) => {
-          self.client.send_copy::<_,str>(
-            &self.topic, None, Some(&msg), None, None, None)?;
-          self.client.poll(0);
+          let record: BaseRecord<'_, str, _> = BaseRecord::to(&self.topic)
+            .payload(&msg);
+          self.client.send(record).map_err(|e| e.0)?;
+          self.client.poll(Duration::new(0, 0));
         },
         Ok(None) => break,
         Err(mpsc::RecvTimeoutError::Timeout) => {
-          self.client.poll(0);
+          self.client.poll(Duration::new(0, 0));
         },
         Err(mpsc::RecvTimeoutError::Disconnected) => {
           return Err(ErrorKind::ProducerGone.into());

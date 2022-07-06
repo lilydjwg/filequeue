@@ -1,13 +1,14 @@
 [package]
 name = "filequeue"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["lilydjwg <lilydjwg@gmail.com>"]
+edition = "2021"
 
 [dependencies]
 libc = "*"
 inotify = "*"
 rdkafka = "*"
-clap = "*"
+clap = { version = "*", features = ["cargo"] }
 error-chain = "*"
 byteorder = "*"
 log = "*"

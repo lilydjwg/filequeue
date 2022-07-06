@@ -1,21 +1,10 @@
-#[macro_use] extern crate error_chain;
-#[macro_use] extern crate log;
-extern crate slog_envlogger;
-extern crate byteorder;
-extern crate rdkafka;
-extern crate inotify;
-extern crate libc;
-extern crate signalbool;
-#[macro_use] extern crate serde_derive;
-extern crate serde_yaml;
-#[macro_use] extern crate clap;
-
 use std::sync::mpsc;
 use std::thread;
 use std::collections::HashMap;
 use std::fs::File;
 
 use clap::{Arg, App};
+use serde::Deserialize;
 
 mod errors;
 mod kafkasink;
@@ -37,13 +26,14 @@ struct Config {
 
 fn main() {
   // this will be inherited
-  let mut sigset;
-  unsafe {
-    sigset = std::mem::uninitialized::<libc::sigset_t>();
-    libc::sigemptyset(&mut sigset);
-    libc::sigaddset(&mut sigset, libc::SIGINT);
-    libc::sigaddset(&mut sigset, libc::SIGTERM);
-  }
+  let sigset = unsafe {
+    let mut sigset = std::mem::MaybeUninit::uninit();
+    let ptr = sigset.as_mut_ptr();
+    libc::sigemptyset(ptr);
+    libc::sigaddset(ptr, libc::SIGINT);
+    libc::sigaddset(ptr, libc::SIGTERM);
+    sigset.assume_init()
+  };
   let ret = unsafe {
     libc::pthread_sigmask(libc::SIG_BLOCK, &sigset, std::ptr::null_mut())
   };
@@ -55,7 +45,7 @@ fn main() {
 
   let matches = App::new("filequeue")
     .about("use log files as a queue to send data to Kafka without rotation")
-    .version(crate_version!())
+    .version(clap::crate_version!())
     .arg(Arg::with_name("config")
          .help("config file")
          .required(true))

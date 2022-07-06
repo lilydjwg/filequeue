@@ -8,12 +8,11 @@ use std::sync::mpsc;
 use std::io::{BufReader, BufRead};
 use std::mem::swap;
 
-use libc;
 use byteorder::{LittleEndian, WriteBytesExt, ReadBytesExt};
-use inotify::{self, watch_mask};
-use signalbool;
+use inotify::{self, WatchMask};
+use log::{info, warn};
 
-use errors::*;
+use crate::errors::*;
 
 const FALLOC_FL_COLLAPSE_RANGE: libc::c_int = 0x08;
 
@@ -132,7 +131,7 @@ impl FileQueue {
     loop {
       let n = self.reader.read_until(b'\n', &mut buf)?;
       if n == 0 || buf[buf.len()-1] != b'\n' {
-        debug_assert!(buf.iter().find(|&x| *x == b'\n').is_none());
+        debug_assert!(!buf.iter().any(|&x| x == b'\n'));
         self.buffer = buf;
         break;
       }
@@ -159,7 +158,7 @@ impl FileQueue {
             ) -> Result<()>{
     let mut notify = inotify::Inotify::init()?;
     // CLOSE_WRITE is for `touch`
-    let _desc = notify.add_watch(&self.filepath, watch_mask::MODIFY)?;
+    let _desc = notify.add_watch(&self.filepath, WatchMask::MODIFY)?;
     self.process_all(&chan)?;
     let mut buf = vec![0; 1024];
     while !sig.caught() {
